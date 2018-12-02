@@ -1,0 +1,47 @@
+Private Sub Worksheet_Change(ByVal Target As Range)
+    If Target.Row = Range("check_price").Row And _
+    Target.Column = Range("check_price").Column Then       ' neu co thay doi cua o check_price
+        Dim IE As New InternetExplorer
+        For m = 1 To 5      ' link tu hang nao toi hang nao
+            IE.Visible = False
+            IE.navigate Cells(m, 5).Value      ' 5: cot cua link
+            Do
+                DoEvents
+            Loop Until IE.readyState = READYSTATE_COMPLETE
+            Dim Doc As HTMLDocument
+            Set Doc = IE.document
+            Dim RawData As HTMLTable
+            '======================================================================
+            '======================================================================
+            Set RawData = Doc.getElementsByClassName("product-dollars")(0)
+            Dim i As Long
+            Dim d As Integer
+            i = RawData.Cells.Length
+            For k = 3 To i - 1
+                d = RawData.Cells(k).innerText
+                Select Case d
+                    Case 10
+                        Cells(m, 2) = RawData.Cells(k + 1).innerText '2: cot gia voi so luong 10
+                    Case 100
+                        Cells(m, 3) = RawData.Cells(k + 1).innerText '3: cot gia voi so luong 100
+                    Case 1000
+                        Cells(m, 4) = RawData.Cells(k + 1).innerText '4: cot gia voi so luong 1000
+                End Select
+            Next k
+            '======================================================================
+            '======================================================================
+            Dim Docid As HTMLDocument
+            Set Docid = IE.document
+            Dim TableElem As IHTMLElement
+            Set TableElem = Docid.getElementById("product-overview")
+            'Cells(m, 1) = TableElem.Cells(1).innerText ' Partnumber
+           ' Cells(m, 1) = TableElem.Cells(4).innerText  '"canship..."
+            Cells(m, 1) = TableElem.Cells(4).innerText
+            '======================================================================
+            '======================================================================
+            
+        Next m
+        IE.Quit
+    End If
+
+End Sub

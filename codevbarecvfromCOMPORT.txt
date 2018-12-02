@@ -1,0 +1,54 @@
+Public Declare Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
+
+Sub Receive_COM5()
+    
+    Dim COM5file As Integer
+    Dim timeout As Date
+    Dim record As String * 11, emptyRecord As String * 11
+    Dim recLen As Integer
+    Dim inputByte As Integer
+    
+    recLen = Len(record)
+        
+    'Open COM5 port with baud rate 2400, No parity, 8 data bits and 1 stop bit
+    
+    COM5file = FreeFile
+    Open "COM5:2400,N,8,1" For Random As #COM5file Len = recLen
+    
+    'Monitor port for 30 seconds
+    
+    timeout = Now + TimeValue("00:00:30")
+    
+    Debug.Print "Started"
+    
+    While Now < timeout
+        Get #COM5file, , record
+        
+        If record <> emptyRecord Then
+        
+            Debug.Print Now; "<" & record & ">"
+            
+            'Display each byte
+            
+            For i = 1 To recLen
+                inputByte = Asc(Mid(record, i, 1))
+                If inputByte = 0 Then
+                    'No character in this position
+                ElseIf inputByte >= 32 And inputByte <= 126 Then
+                    'Printable character
+                    Debug.Print "<" & inputByte & "> "; Chr(inputByte)
+                Else
+                    'Non-printable character
+                    Debug.Print "<" & inputByte & ">"
+                End If
+            Next
+        End If
+        
+        DoEvents
+        Sleep 200
+    Wend
+    
+    Close #COM5file
+    Debug.Print "Finished"
+
+End Sub
